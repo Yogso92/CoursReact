@@ -1,6 +1,7 @@
 import React from 'react'
+import { AfficherTemps } from './AfficherTemps'
 
-export default class Chrono extends React.Component{
+export default class Chrono extends React.PureComponent{
 
     constructor(props){
         super(props)
@@ -14,11 +15,17 @@ export default class Chrono extends React.Component{
         this.reset = this.reset.bind(this)
 
     }
+
     next(){
-        const newState = {...this.state, ...{ms : this.state.ms+10}}
-        this.setState(newState)
+        let now = Date.now()
+        let diff = now - this.startTime
+        this.startTime = now
+        this.setState((s, p) => ({
+            ms : s.ms +parseInt(diff)
+        }))
     }
     start(){
+        this.startTime = Date.now();
         let inter = setInterval(() => this.next(), 10)
         this.setState({interval: inter})
     }
@@ -31,19 +38,14 @@ export default class Chrono extends React.Component{
         if(this.state.interval !== null ){
             this.stop()
         }
+        this.props.ajouterTemps(this.state.ms)
     }
 
     render(){
-        const {ms} = this.state
-        
-        const min = Math.trunc(ms /60000)
-        const s = Math.trunc(ms/1000) - (min*60)
-        
-        const fms = ms % 1000
-
         return(
             <div>
-                <p>{min < 10 && 0}{min}'{s<10 && 0}{s}"{fms<10 && 0}{fms<100 && 0}{fms}ms</p>
+                <AfficherTemps titre = 'chrono' ms = {this.state.ms }/>
+                
                 <button onClick= {this.start} disabled = {this.state.interval !== null} >Start</button>
                 <button onClick = {this.stop}>Stop</button>
                 <button onClick = {this.reset}>Reset</button>
